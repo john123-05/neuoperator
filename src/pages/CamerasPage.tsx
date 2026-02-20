@@ -2,6 +2,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
+import { getApiErrorMessage } from '../lib/api-error';
 import type { Attraction, Park, ParkCamera } from '../lib/types';
 
 type CameraPhotoRow = {
@@ -43,11 +44,6 @@ export default function CamerasPage() {
     () => cameras.find((camera) => camera.customer_code === selectedPreviewCameraCode) || null,
     [cameras, selectedPreviewCameraCode],
   );
-
-  const authHeader = async () => {
-    const { data } = await supabaseBrowser.auth.getSession();
-    return { Authorization: `Bearer ${data.session?.access_token || ''}` };
-  };
 
   const loadParks = async () => {
     const { data, error: parksError } = await supabaseBrowser
@@ -231,7 +227,7 @@ export default function CamerasPage() {
 
     const res = await edgeFetch('/api/admin/park-cameras', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         park_id: selectedParkId,
         customer_code: customerCode,
@@ -243,7 +239,7 @@ export default function CamerasPage() {
 
     const body = await res.json();
     if (!res.ok) {
-      setError(body.error || 'Kamera-Mapping konnte nicht gespeichert werden');
+      setError(getApiErrorMessage(body, 'Kamera-Mapping konnte nicht gespeichert werden'));
       return;
     }
 
@@ -263,12 +259,11 @@ export default function CamerasPage() {
     try {
       const res = await edgeFetch(`/api/admin/park-cameras?id=${encodeURIComponent(cameraId)}`, {
         method: 'DELETE',
-        headers: await authHeader(),
       });
 
       const body = await res.json();
       if (!res.ok) {
-        setError(body.error || 'Kamera konnte nicht gelöscht werden');
+        setError(getApiErrorMessage(body, 'Kamera konnte nicht gelöscht werden'));
         return;
       }
 

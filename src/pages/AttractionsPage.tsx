@@ -2,6 +2,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
+import { getApiErrorMessage } from '../lib/api-error';
 import type { Attraction, Park } from '../lib/types';
 
 export default function AttractionsPage() {
@@ -13,11 +14,6 @@ export default function AttractionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const authHeader = async () => {
-    const { data } = await supabaseBrowser.auth.getSession();
-    return { Authorization: `Bearer ${data.session?.access_token || ''}` };
-  };
 
   const loadParks = async () => {
     const { data, error: parksError } = await supabaseBrowser
@@ -64,13 +60,13 @@ export default function AttractionsPage() {
 
     const res = await edgeFetch('/api/admin/attractions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ park_id: selectedParkId, slug, name, is_active: true }),
     });
 
     const body = await res.json();
     if (!res.ok) {
-      setError(body.error || 'Attraktion konnte nicht gespeichert werden');
+      setError(getApiErrorMessage(body, 'Attraktion konnte nicht gespeichert werden'));
       return;
     }
 
@@ -89,11 +85,10 @@ export default function AttractionsPage() {
     try {
       const res = await edgeFetch(`/api/admin/attractions?id=${encodeURIComponent(attractionId)}`, {
         method: 'DELETE',
-        headers: await authHeader(),
       });
       const body = await res.json();
       if (!res.ok) {
-        setError(body.error || 'Attraktion konnte nicht gelöscht werden');
+        setError(getApiErrorMessage(body, 'Attraktion konnte nicht gelöscht werden'));
         return;
       }
 

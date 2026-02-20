@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
+import { getApiErrorMessage } from '../lib/api-error';
 import type { Park, ParkPathPrefix, SupportTicket, SupportTicketPriority, SupportTicketStatus } from '../lib/types';
 
 const statusLabelMap: Record<SupportTicketStatus, string> = {
@@ -38,11 +39,6 @@ export default function ParksPage() {
   const [supportError, setSupportError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const authHeader = async () => {
-    const { data } = await supabaseBrowser.auth.getSession();
-    return { Authorization: `Bearer ${data.session?.access_token || ''}` };
-  };
 
   const load = async () => {
     const { data: parksData, error: parksError } = await supabaseBrowser
@@ -119,13 +115,13 @@ export default function ParksPage() {
 
     const res = await edgeFetch('/api/admin/parks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, slug, is_active: true }),
     });
     const body = await res.json();
 
     if (!res.ok) {
-      setError(body.error || 'Park konnte nicht erstellt werden');
+      setError(getApiErrorMessage(body, 'Park konnte nicht erstellt werden'));
       return;
     }
 
@@ -142,13 +138,13 @@ export default function ParksPage() {
 
     const res = await edgeFetch('/api/admin/park-prefixes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ park_id: parkForPrefix, path_prefix: pathPrefix, is_active: true }),
     });
     const body = await res.json();
 
     if (!res.ok) {
-      setError(body.error || 'Prefix konnte nicht gespeichert werden');
+      setError(getApiErrorMessage(body, 'Prefix konnte nicht gespeichert werden'));
       return;
     }
 
@@ -166,12 +162,11 @@ export default function ParksPage() {
     try {
       const res = await edgeFetch(`/api/admin/parks?id=${encodeURIComponent(parkId)}`, {
         method: 'DELETE',
-        headers: await authHeader(),
       });
       const body = await res.json();
 
       if (!res.ok) {
-        setError(body.error || 'Park konnte nicht gelöscht werden');
+        setError(getApiErrorMessage(body, 'Park konnte nicht gelöscht werden'));
         return;
       }
 
@@ -192,12 +187,11 @@ export default function ParksPage() {
     try {
       const res = await edgeFetch(`/api/admin/park-prefixes?id=${encodeURIComponent(prefixId)}`, {
         method: 'DELETE',
-        headers: await authHeader(),
       });
       const body = await res.json();
 
       if (!res.ok) {
-        setError(body.error || 'Prefix konnte nicht gelöscht werden');
+        setError(getApiErrorMessage(body, 'Prefix konnte nicht gelöscht werden'));
         return;
       }
 

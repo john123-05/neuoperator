@@ -1,7 +1,7 @@
 
 import { FormEvent, useState } from 'react';
-import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
+import { getApiErrorMessage } from '../lib/api-error';
 
 interface PreviewData {
   prefix: string | null;
@@ -27,16 +27,11 @@ export default function IngestionCheckPage() {
     e.preventDefault();
     setError(null);
 
-    const { data } = await supabaseBrowser.auth.getSession();
-    const token = data.session?.access_token;
-
-    const res = await edgeFetch(`/api/admin/preview-parse?path=${encodeURIComponent(path)}`, {
-      headers: { Authorization: `Bearer ${token || ''}` },
-    });
+    const res = await edgeFetch(`/api/admin/preview-parse?path=${encodeURIComponent(path)}`);
 
     const body = await res.json();
     if (!res.ok) {
-      setError(body.error || 'Preview fehlgeschlagen');
+      setError(getApiErrorMessage(body, 'Preview fehlgeschlagen'));
       setResult(null);
       return;
     }
