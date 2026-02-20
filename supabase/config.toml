@@ -1,0 +1,19 @@
+project_id = "kvpcwlcfgmsmarjtwpsx"
+
+[functions.admin-parks]
+verify_jwt = false
+
+[functions.admin-park-prefixes]
+verify_jwt = false
+
+[functions.admin-attractions]
+verify_jwt = false
+
+[functions.admin-park-cameras]
+verify_jwt = false
+
+[functions.admin-preview-parse]
+verify_jwt = false
+
+[functions.support-sync]
+verify_jwt = false
