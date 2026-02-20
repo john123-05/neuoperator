@@ -1,10 +1,16 @@
 import { supabaseBrowser } from './supabase';
 
-const supabaseUrl = import.meta.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined;
+const supabaseUrl =
+  (import.meta.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ??
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined);
+const anonKey =
+  (import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined) ??
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined);
 
 if (!supabaseUrl || !anonKey) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  throw new Error(
+    'Missing NEXT_PUBLIC_SUPABASE_URL|VITE_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY|VITE_SUPABASE_ANON_KEY',
+  );
 }
 
 const resolvedSupabaseUrl = supabaseUrl;
