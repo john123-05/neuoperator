@@ -1,0 +1,14 @@
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && uuidRegex.test(value);
+}
+
+export function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function asBoolean(value: unknown, defaultValue = true): boolean {
+  return typeof value === 'boolean' ? value : defaultValue;
+}

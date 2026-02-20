@@ -1,11 +1,13 @@
 # Liftpictures Operator Dashboard
 
-Separate Next.js Admin-Webapp zur Verwaltung von:
+Separate Vite/React Admin-Webapp zur Verwaltung von:
 - Parks
 - Park Path Prefixes (`park_slug/...`)
 - Attraktionen
 - Kamera-Codes (`customer_code -> attraction`)
 - Ingestion Parse Preview
+
+Backend-Logik läuft als Supabase Edge Functions (`supabase/functions/*`).
 
 ## Dateiname-Parsing (Ingestion Check)
 
@@ -27,10 +29,35 @@ Separate Next.js Admin-Webapp zur Verwaltung von:
 2. Werte setzen:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPPORT_SYNC_SECRET`
 3. `npm install`
 4. `npm run dev`
+
+## Edge Functions deployen
+
+Erforderliche Functions:
+- `admin-parks`
+- `admin-park-prefixes`
+- `admin-attractions`
+- `admin-park-cameras`
+- `admin-preview-parse`
+- `support-sync`
+
+Beispiel:
+
+```bash
+supabase functions deploy admin-parks
+supabase functions deploy admin-park-prefixes
+supabase functions deploy admin-attractions
+supabase functions deploy admin-park-cameras
+supabase functions deploy admin-preview-parse
+supabase functions deploy support-sync
+```
+
+Secret für Support-Sync setzen:
+
+```bash
+supabase secrets set SUPPORT_SYNC_SECRET=your-long-random-support-sync-secret
+```
 
 ## Admin-Zugriff
 
@@ -48,8 +75,8 @@ Das Dashboard ist read-only und erwartet, dass Tickets aus einem anderen Supabas
 
 ### Zielprojekt (dieses Dashboard)
 
-1. `SUPPORT_SYNC_SECRET` in `.env.local` setzen.
-2. Endpoint (Deployment-URL): `POST /api/support-sync`
+1. `SUPPORT_SYNC_SECRET` als Supabase Function Secret setzen.
+2. Endpoint: `POST https://<PROJECT-REF>.supabase.co/functions/v1/support-sync`
 3. Endpoint erwartet Header:
    - `x-support-sync-secret: <SUPPORT_SYNC_SECRET>`
    - alternativ `Authorization: Bearer <SUPPORT_SYNC_SECRET>`
@@ -60,7 +87,7 @@ In Supabase -> `Database` -> `Webhooks` zwei Webhooks anlegen:
 
 1. Tabelle `support_tickets`
    - Events: `INSERT`, `UPDATE`, `DELETE`
-   - URL: `https://<DEINE-DASHBOARD-DOMAIN>/api/support-sync`
+   - URL: `https://<PROJECT-REF>.supabase.co/functions/v1/support-sync`
    - Header: `x-support-sync-secret: <SUPPORT_SYNC_SECRET>`
 2. Tabelle `support_ticket_messages`
    - Events: `INSERT`, `UPDATE`, `DELETE`
