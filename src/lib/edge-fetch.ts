@@ -25,19 +25,48 @@ const routeMap: Record<string, string> = {
   '/api/support-sync': 'support-sync',
 };
 
-async function normalizeHeaders(initHeaders?: HeadersInit): Promise<Headers> {
+function isLikelyJwt(token: string): boolean {
+  return /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/.test(token);
+}
+
+function extractBearerToken(headerValue: string | null): string | null {
+  if (!headerValue) return null;
+  const match = headerValue.trim().match(/^Bearer\s+(.+)$/i);
+  if (!match) return null;
+  const token = match[1].trim();
+  return isLikelyJwt(token) ? token : null;
+}
+
+async function resolveAccessToken(forceRefresh = false): Promise<string | null> {
+  if (forceRefresh) {
+    const { data } = await supabaseBrowser.auth.refreshSession();
+    const refreshed = data.session?.access_token;
+    return refreshed && isLikelyJwt(refreshed) ? refreshed : null;
+  }
+
+  const { data } = await supabaseBrowser.auth.getSession();
+  const current = data.session?.access_token;
+  if (current && isLikelyJwt(current)) {
+    return current;
+  }
+
+  const { data: refreshedData } = await supabaseBrowser.auth.refreshSession();
+  const refreshed = refreshedData.session?.access_token;
+  return refreshed && isLikelyJwt(refreshed) ? refreshed : null;
+}
+
+async function normalizeHeaders(initHeaders?: HeadersInit, forceRefreshToken = false): Promise<Headers> {
   const headers = new Headers(initHeaders || {});
 
   if (!headers.has('apikey')) {
     headers.set('apikey', resolvedAnonKey);
   }
 
-  if (!headers.has('authorization')) {
-    const { data } = await supabaseBrowser.auth.getSession();
-    const token = data.session?.access_token;
-    if (token) {
-      headers.set('authorization', `Bearer ${token}`);
-    }
+  const existingBearer = extractBearerToken(headers.get('authorization'));
+  if (!existingBearer) {
+    headers.delete('authorization');
+    const token = await resolveAccessToken(forceRefreshToken);
+    if (token) headers.set('authorization', `Bearer ${token}`);
   }
 
   return headers;
@@ -52,6 +81,20 @@ function toEdgeUrl(input: string | URL): string | null {
   return `${resolvedSupabaseUrl}/functions/v1/${mappedFunction}${parsed.search}`;
 }
 
+async function isInvalidJwtResponse(response: Response): Promise<boolean> {
+  if (response.status !== 401) return false;
+
+  const body = await response.clone().json().catch(() => null);
+  if (!body || typeof body !== 'object') return false;
+
+  const payload = body as Record<string, unknown>;
+  const message = typeof payload.message === 'string' ? payload.message : '';
+  const error = typeof payload.error === 'string' ? payload.error : '';
+  const combined = `${message} ${error}`.toLowerCase();
+
+  return combined.includes('invalid jwt') || combined.includes('jwt expired');
+}
+
 export async function edgeFetch(input: string | URL, init: RequestInit = {}): Promise<Response> {
   const edgeUrl = toEdgeUrl(input);
   if (!edgeUrl) {
@@ -59,5 +102,15 @@ export async function edgeFetch(input: string | URL, init: RequestInit = {}): Pr
   }
 
   const headers = await normalizeHeaders(init.headers);
-  return fetch(edgeUrl, { ...init, headers });
+  let response = await fetch(edgeUrl, { ...init, headers });
+
+  if (await isInvalidJwtResponse(response)) {
+    const retryHeaders = await normalizeHeaders(init.headers, true);
+    response = await fetch(edgeUrl, { ...init, headers: retryHeaders });
+    if (await isInvalidJwtResponse(response)) {
+      await supabaseBrowser.auth.signOut();
+    }
+  }
+
+  return response;
 }

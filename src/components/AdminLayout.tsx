@@ -20,10 +20,17 @@ export default function AdminLayout() {
         return;
       }
 
+      const { data: userData, error: userError } = await supabaseBrowser.auth.getUser();
+      if (userError || !userData.user) {
+        await supabaseBrowser.auth.signOut();
+        navigate('/login', { replace: true });
+        return;
+      }
+
       const { data, error: adminError } = await supabaseBrowser
         .from('admin_users')
         .select('user_id')
-        .eq('user_id', session.user.id)
+        .eq('user_id', userData.user.id)
         .maybeSingle();
 
       if (cancelled) return;
