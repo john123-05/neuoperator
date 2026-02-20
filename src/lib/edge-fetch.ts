@@ -29,14 +29,6 @@ function isLikelyJwt(token: string): boolean {
   return /^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/.test(token);
 }
 
-function extractBearerToken(headerValue: string | null): string | null {
-  if (!headerValue) return null;
-  const match = headerValue.trim().match(/^Bearer\s+(.+)$/i);
-  if (!match) return null;
-  const token = match[1].trim();
-  return isLikelyJwt(token) ? token : null;
-}
-
 async function resolveAccessToken(forceRefresh = false): Promise<string | null> {
   if (forceRefresh) {
     const { data } = await supabaseBrowser.auth.refreshSession();
@@ -62,12 +54,9 @@ async function normalizeHeaders(initHeaders?: HeadersInit, forceRefreshToken = f
     headers.set('apikey', resolvedAnonKey);
   }
 
-  const existingBearer = extractBearerToken(headers.get('authorization'));
-  if (!existingBearer) {
-    headers.delete('authorization');
-    const token = await resolveAccessToken(forceRefreshToken);
-    if (token) headers.set('authorization', `Bearer ${token}`);
-  }
+  headers.delete('authorization');
+  const token = await resolveAccessToken(forceRefreshToken);
+  if (token) headers.set('authorization', `Bearer ${token}`);
 
   return headers;
 }
