@@ -110,10 +110,10 @@ button:disabled {
   z-index: 30;
   margin-bottom: 18px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 10px 14px;
 }
 .brand h1 {
   margin: 0;
@@ -128,38 +128,25 @@ button:disabled {
   color: var(--muted);
   font-weight: 700;
 }
-.nav-groups {
-  display: grid;
-  gap: 8px;
-}
-
-.nav-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.nav-group-label {
-  min-width: 58px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-}
-
 .nav-links {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   justify-content: flex-start;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.nav-links-single a {
+  white-space: nowrap;
 }
 .nav-links a {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--hairline);
   border-radius: 999px;
   color: color-mix(in srgb, var(--text) 72%, transparent);
   background: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
   font-weight: 600;
 }
 .nav-links a.active {
@@ -173,11 +160,18 @@ button:disabled {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   justify-self: end;
+  white-space: nowrap;
 }
 .theme-toggle-btn {
   width: auto;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.logout-btn {
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 .table { width: 100%; border-collapse: collapse; }
@@ -545,14 +539,6 @@ button:disabled {
   .topbar {
     grid-template-columns: 1fr;
     gap: 10px;
-  }
-  .nav-group {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .nav-group-label {
-    min-width: auto;
   }
   .logout-btn {
     justify-self: start;

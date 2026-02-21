@@ -67,30 +67,15 @@ export default function AdminLayout() {
     window.localStorage.setItem('lp-theme', theme);
   }, [theme]);
 
-  const navGroups = [
-    {
-      title: 'Core',
-      tabs: [
-        { href: '/parks', label: 'Parks' },
-        { href: '/attractions', label: 'Attraktionen' },
-        { href: '/cameras', label: 'Kameras' },
-        { href: '/website-anfragen', label: 'Website Anfragen' },
-      ],
-    },
-    {
-      title: 'Support',
-      tabs: [
-        { href: '/support-ticket-kunden', label: 'Support Ticket Kunden' },
-        { href: '/ingestion-check', label: 'Ingestion Check' },
-      ],
-    },
-    {
-      title: 'System',
-      tabs: [
-        { href: '/system-health', label: 'System Health' },
-        { href: '/hilfe', label: 'Hilfe' },
-      ],
-    },
+  const tabs = [
+    { href: '/parks', label: 'Parks' },
+    { href: '/attractions', label: 'Attraktionen' },
+    { href: '/cameras', label: 'Kameras' },
+    { href: '/website-anfragen', label: 'Website Anfragen' },
+    { href: '/support-ticket-kunden', label: 'Support Ticket Kunden' },
+    { href: '/ingestion-check', label: 'Ingestion Check' },
+    { href: '/system-health', label: 'System Health' },
+    { href: '/hilfe', label: 'Hilfe' },
   ];
 
   if (loading) {
@@ -120,22 +105,15 @@ export default function AdminLayout() {
           <p className="eyebrow">Liftpictures</p>
           <h1>Operator Dashboard</h1>
         </div>
-        <div className="nav-groups">
-          {navGroups.map((group) => (
-            <div key={group.title} className="nav-group">
-              <span className="nav-group-label">{group.title}</span>
-              <div className="nav-links">
-                {group.tabs.map((tab) => (
-                  <NavLink
-                    key={tab.href}
-                    to={tab.href}
-                    className={location.pathname === tab.href ? 'active' : ''}
-                  >
-                    {tab.label}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+        <div className="nav-links nav-links-single">
+          {tabs.map((tab) => (
+            <NavLink
+              key={tab.href}
+              to={tab.href}
+              className={location.pathname === tab.href ? 'active' : ''}
+            >
+              {tab.label}
+            </NavLink>
           ))}
         </div>
         <div className="topbar-actions">
