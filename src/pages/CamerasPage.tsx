@@ -403,29 +403,31 @@ export default function CamerasPage() {
 
       <div className="card">
         <h3>Aktuelle Zuordnungen</h3>
-        <table className="table">
-          <thead><tr><th>Code</th><th>Kamera</th><th>Attraktion</th><th>Status</th><th>Aktionen</th></tr></thead>
-          <tbody>
-            {cameras.map((camera) => (
-              <tr key={camera.id}>
-                <td>{camera.customer_code}</td>
-                <td>{camera.camera_name || '-'}</td>
-                <td>{camera.attraction_id ? attractionMap.get(camera.attraction_id) || camera.attraction_id : '-'}</td>
-                <td><span className={`badge ${camera.is_active ? 'ok' : 'warn'}`}>{camera.is_active ? 'Aktiv' : 'Inaktiv'}</span></td>
-                <td>
-                  <button
-                    type="button"
-                    className="danger inline"
-                    onClick={() => onDelete(camera.id, camera.customer_code)}
-                    disabled={deletingId === camera.id}
-                  >
-                    Löschen
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-wrap">
+          <table className="table camera-table">
+            <thead><tr><th>Code</th><th>Kamera</th><th>Attraktion</th><th>Status</th><th>Aktionen</th></tr></thead>
+            <tbody>
+              {cameras.map((camera) => (
+                <tr key={camera.id}>
+                  <td>{camera.customer_code}</td>
+                  <td>{camera.camera_name || '-'}</td>
+                  <td>{camera.attraction_id ? attractionMap.get(camera.attraction_id) || camera.attraction_id : '-'}</td>
+                  <td><span className={`badge ${camera.is_active ? 'ok' : 'warn'}`}>{camera.is_active ? 'Aktiv' : 'Inaktiv'}</span></td>
+                  <td className="actions-cell">
+                    <button
+                      type="button"
+                      className="danger inline"
+                      onClick={() => onDelete(camera.id, camera.customer_code)}
+                      disabled={deletingId === camera.id}
+                    >
+                      Löschen
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="card" style={{ gridColumn: '1 / -1' }}>

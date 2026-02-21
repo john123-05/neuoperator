@@ -10,6 +10,15 @@ import CamerasPage from './pages/CamerasPage';
 import SupportTicketKundenPage from './pages/SupportTicketKundenPage';
 import IngestionCheckPage from './pages/IngestionCheckPage';
 
+try {
+  const savedTheme = window.localStorage.getItem('lp-theme');
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+} catch {
+  // no-op when storage is unavailable
+}
+
 function AppRouter() {
   return (
     <BrowserRouter>

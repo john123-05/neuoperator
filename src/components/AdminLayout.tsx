@@ -2,10 +2,16 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabaseBrowser } from '../lib/supabase';
 
+type ThemeMode = 'light' | 'dark';
+
 export default function AdminLayout() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const current = document.documentElement.getAttribute('data-theme');
+    return current === 'dark' ? 'dark' : 'light';
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,6 +62,11 @@ export default function AdminLayout() {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage.setItem('lp-theme', theme);
+  }, [theme]);
+
   const tabs = [
     { href: '/parks', label: 'Parks' },
     { href: '/attractions', label: 'Attraktionen' },
@@ -102,15 +113,25 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </div>
-        <button
-          className="secondary logout-btn"
-          onClick={async () => {
-            await supabaseBrowser.auth.signOut();
-            window.location.href = '/login';
-          }}
-        >
-          Logout
-        </button>
+        <div className="topbar-actions">
+          <button
+            type="button"
+            className="secondary theme-toggle-btn"
+            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            aria-label={theme === 'dark' ? 'Hellen Modus aktivieren' : 'Dunklen Modus aktivieren'}
+          >
+            {theme === 'dark' ? 'Hellmodus' : 'Dunkelmodus'}
+          </button>
+          <button
+            className="secondary logout-btn"
+            onClick={async () => {
+              await supabaseBrowser.auth.signOut();
+              window.location.href = '/login';
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
       <Outlet />
     </div>
