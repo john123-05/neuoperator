@@ -481,10 +481,32 @@ button:disabled {
   bottom: 18px;
   width: min(520px, calc(100vw - 24px));
   pointer-events: auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 18px 40px rgba(0, 0, 0, 0.34);
 }
 
 .tour-panel h3 {
-  margin: 0 0 8px;
+  margin: 2px 0 10px;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.tour-step-indicator {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--accent) 75%, white 25%);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tour-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text) 86%, transparent);
 }
 
 .tour-actions {

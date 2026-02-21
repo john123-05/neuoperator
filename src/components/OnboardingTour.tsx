@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type TourStep = {
   id: string;
   title: string;
   text: string;
+  route?: string;
   selector?: string;
 };
 
@@ -16,43 +17,80 @@ const TOUR_SESSION_KEY = 'lp-onboarding-tour-session-shown';
 const steps: TourStep[] = [
   {
     id: 'welcome',
+    route: '/parks',
+    selector: '.tour-panel',
     title: 'Willkommen im Liftpictures Operator Dashboard',
-    text: 'Ich zeige dir kurz die wichtigsten Funktionen. Mit "Weiter" gehst du Schritt fuer Schritt durch die wichtigsten Bereiche.',
+    text: 'Willkommen. Ich zeige dir in einer kurzen Tour die wichtigsten Funktionen, damit du sofort produktiv starten kannst.',
   },
   {
     id: 'parks',
+    route: '/parks',
     selector: '#tour-park-create',
     title: 'Park anlegen',
     text: 'Hier legst du neue Parks an. Name + Slug werden fuer Routing und Datenzuordnung verwendet.',
   },
   {
     id: 'prefix',
+    route: '/parks',
     selector: '#tour-prefix-map',
     title: 'Path Prefix Mapping',
     text: 'Der Prefix verbindet Upload-Pfade mit einem Park. So landen neue Bilder im richtigen Park.',
   },
   {
     id: 'support',
+    route: '/parks',
     selector: '#tour-support-preview',
     title: 'Support Ticket Kunden',
     text: 'Diese Vorschau zeigt neue synchronisierte Tickets. Von hier springst du direkt in die Detailansicht.',
   },
   {
     id: 'news',
+    route: '/parks',
     selector: '#tour-news-feed',
     title: 'News Feed',
     text: 'Im News Feed siehst du neue Events wie neue Anfragen, neue Tickets oder geaenderte Zuordnungen.',
   },
   {
+    id: 'cam-park',
+    route: '/cameras',
+    selector: '#tour-cam-park-select',
+    title: 'Kamera-Seite: Park Auswahl',
+    text: 'Hier waehlt man den Park. Alle Zuordnungen und Vorschauen darunter beziehen sich zuerst auf diese Auswahl.',
+  },
+  {
+    id: 'cam-map',
+    route: '/cameras',
+    selector: '#tour-cam-create',
+    title: 'Kamera-Zuordnung',
+    text: 'Hier verknuepfst du Customer/Camera Code mit Kamera-Name und optional Attraktion. Das steuert die operative Zuordnung.',
+  },
+  {
+    id: 'cam-dropdown',
+    route: '/cameras',
+    selector: '#tour-cam-preview-select',
+    title: 'Dropdown fuer Bildvorschau',
+    text: 'Waehle im Dropdown eine Kamera. Danach zeigt die Vorschau die neuesten Bilder fuer den Code, inklusive Fallback wenn noetig.',
+  },
+  {
+    id: 'cam-images',
+    route: '/cameras',
+    selector: '#tour-cam-images',
+    title: 'Aktuelle Kamera-Bilder',
+    text: 'Hier siehst du die letzten Bilder und erkennst sofort, ob Zuordnung und Ingestion korrekt laufen.',
+  },
+  {
     id: 'help',
+    route: '/parks',
     selector: '[data-tour=\"nav-help\"]',
     title: 'Hilfe Bereich',
     text: 'In der Navigation findest du unter Hilfe die FAQ mit Suche und Loesungswegen zu den wichtigsten Themen.',
   },
   {
     id: 'finish',
+    route: '/parks',
+    selector: '.tour-panel',
     title: 'Fertig',
-    text: 'Du kannst jederzeit wieder starten, aber wenn du diese Tour nicht mehr sehen willst, klicke auf "Nicht mehr anzeigen".',
+    text: 'Das war die Kurz-Tour. Fuer alle Details gehe in der Navigation auf Hilfe. Wenn du diese Tour nicht mehr sehen willst: "Nicht mehr anzeigen".',
   },
 ];
 
@@ -65,6 +103,7 @@ function getStepRect(selector?: string): Rect | null {
 }
 
 export default function OnboardingTour() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(0);
@@ -77,7 +116,7 @@ export default function OnboardingTour() {
     const disabled = window.localStorage.getItem(TOUR_DISABLED_KEY) === 'true';
     const shownInSession = window.sessionStorage.getItem(TOUR_SESSION_KEY) === 'true';
     if (disabled || shownInSession) return;
-    if (location.pathname !== '/parks') return;
+    if (location.pathname === '/login') return;
 
     setVisible(true);
     window.sessionStorage.setItem(TOUR_SESSION_KEY, 'true');
@@ -85,17 +124,39 @@ export default function OnboardingTour() {
 
   useEffect(() => {
     if (!visible) return;
+    const route = step.route;
+    if (!route || location.pathname === route) return;
+    navigate(route, { replace: true });
+  }, [location.pathname, navigate, step.route, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
 
     const update = () => setRect(getStepRect(step.selector));
+    let retries = 0;
+    const maxRetries = 8;
+    let timer: number | null = null;
+
+    const retryUntilFound = () => {
+      const nextRect = getStepRect(step.selector);
+      setRect(nextRect);
+      if (!nextRect && retries < maxRetries) {
+        retries += 1;
+        timer = window.setTimeout(retryUntilFound, 120);
+      }
+    };
+
     update();
+    retryUntilFound();
 
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
+      if (timer) window.clearTimeout(timer);
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
-  }, [step.selector, visible]);
+  }, [step.selector, visible, location.pathname]);
 
   if (!visible) return null;
 
@@ -116,9 +177,12 @@ export default function OnboardingTour() {
       )}
 
       <div className="tour-panel card">
+        <p className="tour-step-indicator">
+          Schritt {index + 1} von {steps.length}
+        </p>
         <p className="eyebrow">Walkthrough</p>
         <h3>{step.title}</h3>
-        <p className="note">{step.text}</p>
+        <p className="tour-text">{step.text}</p>
 
         <div className="tour-actions">
           <button type="button" className="secondary" onClick={onClose}>

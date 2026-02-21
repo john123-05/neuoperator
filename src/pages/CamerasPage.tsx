@@ -366,7 +366,7 @@ export default function CamerasPage() {
 
   return (
     <div className="grid two">
-      <div className="card" style={{ gridColumn: '1 / -1' }}>
+      <div className="card" style={{ gridColumn: '1 / -1' }} id="tour-cam-park-select">
         <h2>Kamera-Mapping</h2>
         <div className="row">
           <div>
@@ -388,7 +388,7 @@ export default function CamerasPage() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card" id="tour-cam-create">
         <h3>Neue Kamera-Zuordnung</h3>
         <form className="grid" onSubmit={onCreate}>
           <div>
@@ -441,10 +441,10 @@ export default function CamerasPage() {
         </div>
       </div>
 
-      <div className="card" style={{ gridColumn: '1 / -1' }}>
+      <div className="card" style={{ gridColumn: '1 / -1' }} id="tour-cam-images">
         <h3>Aktuelle Kamera-Bilder</h3>
         <div className="row" style={{ alignItems: 'end' }}>
-          <div>
+          <div id="tour-cam-preview-select">
             <label>Kamera</label>
             <select
               value={selectedPreviewCameraCode}
