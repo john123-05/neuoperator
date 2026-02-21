@@ -73,6 +73,7 @@ export default function AdminLayout() {
     { href: '/cameras', label: 'Kameras' },
     { href: '/support-ticket-kunden', label: 'Support Ticket Kunden' },
     { href: '/ingestion-check', label: 'Ingestion Check' },
+    { href: '/hilfe', label: 'Hilfe' },
   ];
 
   if (loading) {

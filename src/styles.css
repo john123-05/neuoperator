@@ -408,6 +408,81 @@ button:disabled {
   color: color-mix(in srgb, var(--accent) 75%, white 25%);
 }
 
+.help-hero h2,
+.help-hero p {
+  margin-top: 0;
+}
+
+.help-search-wrap {
+  position: relative;
+}
+
+.help-suggestions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.help-suggestion-btn,
+.help-tag-btn {
+  width: auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: color-mix(in srgb, var(--accent) 75%, white 25%);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+}
+
+.help-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.help-faq-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.help-faq-item {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel-strong) 68%, white 32%);
+  padding: 8px 10px;
+}
+
+.help-faq-question {
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding: 4px 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.help-faq-question.open {
+  color: color-mix(in srgb, var(--accent) 75%, white 25%);
+}
+
+.help-faq-answer {
+  margin: 8px 2px 0;
+  font-size: 14px;
+  color: color-mix(in srgb, var(--text) 76%, transparent);
+}
+
+.help-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 @media (max-width: 900px) {
   .topbar {
     grid-template-columns: 1fr;
