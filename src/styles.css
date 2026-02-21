@@ -128,11 +128,31 @@ button:disabled {
   color: var(--muted);
   font-weight: 700;
 }
+.nav-groups {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nav-group-label {
+  min-width: 58px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .nav-links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .nav-links a {
   padding: 8px 12px;
@@ -526,8 +546,13 @@ button:disabled {
     grid-template-columns: 1fr;
     gap: 10px;
   }
-  .nav-links {
-    justify-content: flex-start;
+  .nav-group {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .nav-group-label {
+    min-width: auto;
   }
   .logout-btn {
     justify-self: start;
