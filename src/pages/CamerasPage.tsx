@@ -29,6 +29,7 @@ export default function CamerasPage() {
   const [cameras, setCameras] = useState<ParkCamera[]>([]);
   const [selectedPreviewCameraCode, setSelectedPreviewCameraCode] = useState('');
   const [cameraPhotos, setCameraPhotos] = useState<CameraPhotoPreview[]>([]);
+  const [cameraPhotoCounts, setCameraPhotoCounts] = useState<Record<string, number>>({});
   const [cameraPhotosLoading, setCameraPhotosLoading] = useState(false);
   const [cameraPhotosError, setCameraPhotosError] = useState<string | null>(null);
   const [customerCode, setCustomerCode] = useState('');
@@ -90,7 +91,38 @@ export default function CamerasPage() {
     }
 
     setAttractions((attrData || []) as Attraction[]);
-    setCameras((camData || []) as ParkCamera[]);
+    const cameraList = (camData || []) as ParkCamera[];
+    setCameras(cameraList);
+
+    if (!cameraList.length) {
+      setCameraPhotoCounts({});
+      return;
+    }
+
+    const uniqueCodes = [...new Set(cameraList.map((camera) => camera.customer_code))];
+    const countEntries = await Promise.all(
+      uniqueCodes.map(async (code) => {
+        const { count: byCameraCode } = await supabaseBrowser
+          .from('photos')
+          .select('id', { count: 'exact', head: true })
+          .eq('park_id', parkId)
+          .eq('camera_code', code);
+
+        if ((byCameraCode || 0) > 0) {
+          return [code, byCameraCode || 0] as const;
+        }
+
+        const { count: bySourceCode } = await supabaseBrowser
+          .from('photos')
+          .select('id', { count: 'exact', head: true })
+          .eq('park_id', parkId)
+          .eq('source_customer_code', code);
+
+        return [code, bySourceCode || 0] as const;
+      }),
+    );
+
+    setCameraPhotoCounts(Object.fromEntries(countEntries));
   };
 
   const loadCameraPhotos = async (parkId: string, cameraCode: string) => {
@@ -212,9 +244,14 @@ export default function CamerasPage() {
 
     const currentExists = cameras.some((camera) => camera.customer_code === selectedPreviewCameraCode);
     if (!currentExists) {
-      setSelectedPreviewCameraCode(cameras[0].customer_code);
+      const bestCamera =
+        [...cameras].sort(
+          (a, b) =>
+            (cameraPhotoCounts[b.customer_code] || 0) - (cameraPhotoCounts[a.customer_code] || 0),
+        )[0] || cameras[0];
+      setSelectedPreviewCameraCode(bestCamera.customer_code);
     }
-  }, [cameras, selectedPreviewCameraCode]);
+  }, [cameraPhotoCounts, cameras, selectedPreviewCameraCode]);
   useEffect(() => {
     if (!selectedParkId || !selectedPreviewCameraCode) return;
     void loadCameraPhotos(selectedParkId, selectedPreviewCameraCode);
@@ -362,7 +399,8 @@ export default function CamerasPage() {
               {!cameras.length && <option value="">Keine Kamera verfügbar</option>}
               {cameras.map((camera) => (
                 <option key={camera.id} value={camera.customer_code}>
-                  {camera.camera_name ? `${camera.camera_name} (${camera.customer_code})` : `Kamera ${camera.customer_code}`}
+                  {camera.camera_name ? `${camera.camera_name} (${camera.customer_code})` : `Kamera ${camera.customer_code}`}{' '}
+                  - {cameraPhotoCounts[camera.customer_code] || 0} Bilder
                 </option>
               ))}
             </select>
@@ -381,7 +419,8 @@ export default function CamerasPage() {
 
         {selectedPreviewCamera && (
           <p className="note" style={{ marginTop: 12 }}>
-            Neueste Bilder für {selectedPreviewCamera.camera_name || `Kamera ${selectedPreviewCamera.customer_code}`}.
+            Neueste Bilder für {selectedPreviewCamera.camera_name || `Kamera ${selectedPreviewCamera.customer_code}`}. Im
+            ausgewählten Park: {cameraPhotoCounts[selectedPreviewCamera.customer_code] || 0}.
           </p>
         )}
         {cameraPhotosLoading && <p className="note">Bilder werden geladen...</p>}
