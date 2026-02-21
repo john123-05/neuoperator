@@ -71,7 +71,9 @@ export default function AdminLayout() {
     { href: '/parks', label: 'Parks' },
     { href: '/attractions', label: 'Attraktionen' },
     { href: '/cameras', label: 'Kameras' },
+    { href: '/website-anfragen', label: 'Website Anfragen' },
     { href: '/support-ticket-kunden', label: 'Support Ticket Kunden' },
+    { href: '/system-health', label: 'System Health' },
     { href: '/ingestion-check', label: 'Ingestion Check' },
     { href: '/hilfe', label: 'Hilfe' },
   ];

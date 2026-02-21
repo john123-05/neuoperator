@@ -1,9 +1,11 @@
 
 import { Link } from 'react-router-dom';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
 import { getApiErrorMessage } from '../lib/api-error';
+import { appendActivityEvent } from '../lib/activity-feed';
+import ActivityFeedWidget from '../components/ActivityFeedWidget';
 import type { Park, ParkPathPrefix, SupportTicket, SupportTicketPriority, SupportTicketStatus } from '../lib/types';
 
 const statusLabelMap: Record<SupportTicketStatus, string> = {
@@ -39,6 +41,7 @@ export default function ParksPage() {
   const [supportError, setSupportError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const latestSupportTicketIdRef = useRef<string | null>(null);
 
   const load = async () => {
     const { data: parksData, error: parksError } = await supabaseBrowser
@@ -92,6 +95,23 @@ export default function ParksPage() {
   }, [loadSupportPreview]);
 
   useEffect(() => {
+    const latest = supportPreview[0];
+    if (!latest) return;
+    if (!latestSupportTicketIdRef.current) {
+      latestSupportTicketIdRef.current = latest.id;
+      return;
+    }
+    if (latest.id !== latestSupportTicketIdRef.current) {
+      latestSupportTicketIdRef.current = latest.id;
+      appendActivityEvent({
+        title: 'Neues Support Ticket',
+        details: latest.subject,
+        level: 'info',
+      });
+    }
+  }, [supportPreview]);
+
+  useEffect(() => {
     const channel = supabaseBrowser
       .channel('support-ticket-preview-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, async () => {
@@ -126,6 +146,11 @@ export default function ParksPage() {
     }
 
     setStatus('Park gespeichert');
+    appendActivityEvent({
+      title: 'Park gespeichert',
+      details: `${name} (${slug})`,
+      level: 'success',
+    });
     setName('');
     setSlug('');
     await load();
@@ -149,6 +174,11 @@ export default function ParksPage() {
     }
 
     setStatus('Prefix gespeichert');
+    appendActivityEvent({
+      title: 'Prefix gespeichert',
+      details: pathPrefix,
+      level: 'success',
+    });
     setPathPrefix('');
     await load();
   };
@@ -172,6 +202,11 @@ export default function ParksPage() {
 
       if (parkForPrefix === parkId) setParkForPrefix('');
       setStatus('Park gelöscht');
+      appendActivityEvent({
+        title: 'Park gelöscht',
+        details: parkName,
+        level: 'warning',
+      });
       await load();
     } finally {
       setDeletingId(null);
@@ -196,6 +231,11 @@ export default function ParksPage() {
       }
 
       setStatus('Prefix gelöscht');
+      appendActivityEvent({
+        title: 'Prefix gelöscht',
+        details: prefix,
+        level: 'warning',
+      });
       await load();
     } finally {
       setDeletingId(null);
@@ -263,6 +303,8 @@ export default function ParksPage() {
         )}
         <Link to="/support-ticket-kunden" className="support-link">Zur Support-Ansicht</Link>
       </div>
+
+      <ActivityFeedWidget />
 
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h2>Parks</h2>

@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
 import { getApiErrorMessage } from '../lib/api-error';
+import { appendActivityEvent } from '../lib/activity-feed';
 import type { Attraction, Park } from '../lib/types';
 
 export default function AttractionsPage() {
@@ -71,6 +72,11 @@ export default function AttractionsPage() {
     }
 
     setStatus('Attraktion gespeichert');
+    appendActivityEvent({
+      title: 'Attraktion gespeichert',
+      details: `${name} (${slug})`,
+      level: 'success',
+    });
     setName('');
     setSlug('');
     await loadAttractions(selectedParkId);
@@ -93,6 +99,11 @@ export default function AttractionsPage() {
       }
 
       setStatus('Attraktion gelöscht');
+      appendActivityEvent({
+        title: 'Attraktion gelöscht',
+        details: attractionName,
+        level: 'warning',
+      });
       await loadAttractions(selectedParkId);
     } finally {
       setDeletingId(null);

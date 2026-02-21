@@ -10,6 +10,8 @@ import CamerasPage from './pages/CamerasPage';
 import SupportTicketKundenPage from './pages/SupportTicketKundenPage';
 import IngestionCheckPage from './pages/IngestionCheckPage';
 import HelpPage from './pages/HelpPage';
+import WebsiteAnfragenPage from './pages/WebsiteAnfragenPage';
+import SystemHealthPage from './pages/SystemHealthPage';
 
 try {
   const savedTheme = window.localStorage.getItem('lp-theme');
@@ -32,6 +34,8 @@ function AppRouter() {
           <Route path="/cameras" element={<CamerasPage />} />
           <Route path="/support-ticket-kunden" element={<SupportTicketKundenPage />} />
           <Route path="/ingestion-check" element={<IngestionCheckPage />} />
+          <Route path="/website-anfragen" element={<WebsiteAnfragenPage />} />
+          <Route path="/system-health" element={<SystemHealthPage />} />
           <Route path="/hilfe" element={<HelpPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/parks" replace />} />

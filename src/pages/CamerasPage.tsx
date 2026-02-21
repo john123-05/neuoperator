@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
 import { edgeFetch } from '../lib/edge-fetch';
 import { getApiErrorMessage } from '../lib/api-error';
+import { appendActivityEvent } from '../lib/activity-feed';
 import type { Attraction, Park, ParkCamera } from '../lib/types';
 
 type CameraPhotoRow = {
@@ -323,6 +324,11 @@ export default function CamerasPage() {
     }
 
     setStatus('Kamera-Mapping gespeichert');
+    appendActivityEvent({
+      title: 'Kamera-Zuordnung gespeichert',
+      details: `${customerCode}${cameraName ? ` (${cameraName})` : ''}`,
+      level: 'success',
+    });
     setCustomerCode('');
     setCameraName('');
     setSelectedAttractionId('');
@@ -347,6 +353,11 @@ export default function CamerasPage() {
       }
 
       setStatus('Kamera gelöscht');
+      appendActivityEvent({
+        title: 'Kamera-Zuordnung gelöscht',
+        details: code,
+        level: 'warning',
+      });
       await loadParkData(selectedParkId);
     } finally {
       setDeletingId(null);
