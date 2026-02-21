@@ -460,6 +460,51 @@ button:disabled {
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.tour-spotlight {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(8, 10, 14, 0.72);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, white 45%);
+  pointer-events: none;
+}
+
+.tour-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: min(520px, calc(100vw - 24px));
+  pointer-events: auto;
+}
+
+.tour-panel h3 {
+  margin: 0 0 8px;
+}
+
+.tour-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.tour-actions button {
+  width: auto;
+}
+
+.tour-optout-btn {
+  background: rgba(191, 43, 61, 0.18);
+  border-color: rgba(191, 43, 61, 0.44);
+  color: #b42235;
+}
+
 .help-hero h2,
 .help-hero p {
   margin-top: 0;
@@ -548,5 +593,10 @@ button:disabled {
   }
   .support-layout {
     grid-template-columns: 1fr;
+  }
+  .tour-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
   }
 }

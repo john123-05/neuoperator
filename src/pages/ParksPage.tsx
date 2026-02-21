@@ -244,7 +244,7 @@ export default function ParksPage() {
 
   return (
     <div className="grid three">
-      <div className="card">
+      <div className="card" id="tour-park-create">
         <h2>Park anlegen</h2>
         <form className="grid" onSubmit={createPark}>
           <div>
@@ -259,7 +259,7 @@ export default function ParksPage() {
         </form>
       </div>
 
-      <div className="card">
+      <div className="card" id="tour-prefix-map">
         <h2>Path Prefix mappen</h2>
         <p className="note">Upload-Pfad muss mit Prefix starten: `prefix/dateiname.jpg`</p>
         <form className="grid" onSubmit={createPrefix}>
@@ -279,7 +279,7 @@ export default function ParksPage() {
         </form>
       </div>
 
-      <div className="card">
+      <div className="card" id="tour-support-preview">
         <h2>Support Ticket Kunden</h2>
         <p className="note">Live-Vorschau der neuesten synchronisierten Tickets.</p>
         {supportLoading && <p className="support-loading">Tickets werden geladen...</p>}
@@ -304,7 +304,9 @@ export default function ParksPage() {
         <Link to="/support-ticket-kunden" className="support-link">Zur Support-Ansicht</Link>
       </div>
 
-      <ActivityFeedWidget />
+      <div id="tour-news-feed">
+        <ActivityFeedWidget />
+      </div>
 
       <div className="card" style={{ gridColumn: '1 / -1' }}>
         <h2>Parks</h2>

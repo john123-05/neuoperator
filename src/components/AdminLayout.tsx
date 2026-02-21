@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabaseBrowser } from '../lib/supabase';
+import OnboardingTour from './OnboardingTour';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -110,6 +111,7 @@ export default function AdminLayout() {
             <NavLink
               key={tab.href}
               to={tab.href}
+              data-tour={tab.href === '/hilfe' ? 'nav-help' : undefined}
               className={location.pathname === tab.href ? 'active' : ''}
             >
               {tab.label}
@@ -137,6 +139,7 @@ export default function AdminLayout() {
         </div>
       </div>
       <Outlet />
+      <OnboardingTour />
     </div>
   );
 }
