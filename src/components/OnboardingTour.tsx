@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { TOUR_DISABLED_KEY, TOUR_SESSION_KEY, isTourDisabled, setTourDisabled } from '../lib/onboarding-settings';
 
 type TourStep = {
   id: string;
@@ -10,9 +11,6 @@ type TourStep = {
 };
 
 type Rect = { top: number; left: number; width: number; height: number };
-
-const TOUR_DISABLED_KEY = 'lp-onboarding-tour-disabled';
-const TOUR_SESSION_KEY = 'lp-onboarding-tour-session-shown';
 
 const steps: TourStep[] = [
   {
@@ -113,7 +111,7 @@ export default function OnboardingTour() {
   const isLast = index === steps.length - 1;
 
   useEffect(() => {
-    const disabled = window.localStorage.getItem(TOUR_DISABLED_KEY) === 'true';
+    const disabled = isTourDisabled();
     const shownInSession = window.sessionStorage.getItem(TOUR_SESSION_KEY) === 'true';
     if (disabled || shownInSession) return;
     if (location.pathname === '/login') return;
@@ -210,7 +208,7 @@ export default function OnboardingTour() {
                 type="button"
                 className="tour-optout-btn"
                 onClick={() => {
-                  window.localStorage.setItem(TOUR_DISABLED_KEY, 'true');
+                  setTourDisabled(true);
                   onClose();
                 }}
               >

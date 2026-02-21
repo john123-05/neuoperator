@@ -75,6 +75,7 @@ export default function AdminLayout() {
     { href: '/website-anfragen', label: 'Website' },
     { href: '/support-ticket-kunden', label: 'Support' },
     { href: '/ingestion-check', label: 'Ingestion' },
+    { href: '/einstellungen', label: 'Einstellungen' },
     { href: '/system-health', label: 'Health' },
     { href: '/hilfe', label: 'Hilfe' },
   ];
