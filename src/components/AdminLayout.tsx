@@ -13,6 +13,7 @@ export default function AdminLayout() {
     const current = document.documentElement.getAttribute('data-theme');
     return current === 'dark' ? 'dark' : 'light';
   });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,6 +69,10 @@ export default function AdminLayout() {
     window.localStorage.setItem('lp-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const tabs = [
     { href: '/parks', label: 'Parks' },
     { href: '/attractions', label: 'Attraktionen' },
@@ -75,9 +80,9 @@ export default function AdminLayout() {
     { href: '/website-anfragen', label: 'Website' },
     { href: '/support-ticket-kunden', label: 'Support' },
     { href: '/ingestion-check', label: 'Ingestion' },
-    { href: '/einstellungen', label: 'Einstellungen' },
     { href: '/system-health', label: 'Health' },
     { href: '/hilfe', label: 'Hilfe' },
+    { href: '/einstellungen', label: 'Einstellungen' },
   ];
 
   if (loading) {
@@ -104,16 +109,29 @@ export default function AdminLayout() {
     <div className="container">
       <div className="topbar card">
         <div className="brand">
-          <p className="eyebrow">Liftpictures</p>
-          <h1>Operator Dashboard</h1>
+          <h1>Operator</h1>
         </div>
-        <div className="nav-links nav-links-single">
+        <button
+          type="button"
+          className="secondary hamburger-btn"
+          aria-label="Navigation umschalten"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="main-navigation"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+        >
+          {mobileMenuOpen ? 'Schliessen' : 'Menue'}
+        </button>
+        <div
+          id="main-navigation"
+          className={`nav-links nav-links-single ${mobileMenuOpen ? 'mobile-open' : ''}`}
+        >
           {tabs.map((tab) => (
             <NavLink
               key={tab.href}
               to={tab.href}
               data-tour={tab.href === '/hilfe' ? 'nav-help' : undefined}
               className={location.pathname === tab.href ? 'active' : ''}
+              onClick={() => setMobileMenuOpen(false)}
             >
               {tab.label}
             </NavLink>

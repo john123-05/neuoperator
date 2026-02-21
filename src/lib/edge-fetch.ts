@@ -22,6 +22,9 @@ const routeMap: Record<string, string> = {
   '/api/admin/attractions': 'admin-attractions',
   '/api/admin/park-cameras': 'admin-park-cameras',
   '/api/admin/preview-parse': 'admin-preview-parse',
+  '/api/admin/support': 'admin-support',
+  '/api/admin/website-requests': 'admin-website-requests',
+  '/api/admin/email-leads': 'admin-email-leads',
   '/api/support-sync': 'support-sync',
 };
 

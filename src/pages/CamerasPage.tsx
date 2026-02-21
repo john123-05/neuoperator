@@ -412,7 +412,7 @@ export default function CamerasPage() {
         </form>
       </div>
 
-      <div className="card">
+      <div className="card camera-assignments-card">
         <h3>Aktuelle Zuordnungen</h3>
         <div className="table-wrap">
           <table className="table camera-table">

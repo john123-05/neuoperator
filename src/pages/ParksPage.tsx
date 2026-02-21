@@ -11,7 +11,7 @@ import type { Park, ParkPathPrefix, SupportTicket, SupportTicketPriority, Suppor
 const statusLabelMap: Record<SupportTicketStatus, string> = {
   open: 'Offen',
   in_progress: 'In Bearbeitung',
-  resolved: 'Gelöst',
+  resolved: 'Erledigt',
   closed: 'Geschlossen',
 };
 
@@ -288,7 +288,7 @@ export default function ParksPage() {
           <p className="support-empty">Keine Tickets vorhanden.</p>
         )}
         {!supportLoading && !supportError && supportPreview.length > 0 && (
-          <ul className="ticket-preview-list">
+          <ul className="ticket-preview-list ticket-preview-list-scroll">
             {supportPreview.map((ticket) => (
               <li key={ticket.id} className="ticket-preview-item">
                 <p className="ticket-preview-subject">{ticket.subject}</p>

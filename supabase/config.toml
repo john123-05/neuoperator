@@ -15,5 +15,14 @@ verify_jwt = false
 [functions.admin-preview-parse]
 verify_jwt = false
 
+[functions.admin-support]
+verify_jwt = false
+
+[functions.admin-website-requests]
+verify_jwt = false
+
+[functions.admin-email-leads]
+verify_jwt = false
+
 [functions.support-sync]
 verify_jwt = false

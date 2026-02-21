@@ -100,6 +100,11 @@ function getStepRect(selector?: string): Rect | null {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
 
+function getStepElement(selector?: string): Element | null {
+  if (!selector) return null;
+  return document.querySelector(selector);
+}
+
 export default function OnboardingTour() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -132,15 +137,19 @@ export default function OnboardingTour() {
 
     const update = () => setRect(getStepRect(step.selector));
     let retries = 0;
-    const maxRetries = 8;
+    const maxRetries = 20;
     let timer: number | null = null;
 
     const retryUntilFound = () => {
+      const element = getStepElement(step.selector);
       const nextRect = getStepRect(step.selector);
       setRect(nextRect);
+      if (element && step.selector !== '.tour-panel') {
+        element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
       if (!nextRect && retries < maxRetries) {
         retries += 1;
-        timer = window.setTimeout(retryUntilFound, 120);
+        timer = window.setTimeout(retryUntilFound, 150);
       }
     };
 

@@ -1,6 +1,7 @@
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabaseBrowser } from '../lib/supabase';
+import { edgeFetch } from '../lib/edge-fetch';
+import { getApiErrorMessage } from '../lib/api-error';
 import type {
   SupportTicket,
   SupportTicketMessage,
@@ -11,7 +12,7 @@ import type {
 const statusLabelMap: Record<SupportTicketStatus, string> = {
   open: 'Offen',
   in_progress: 'In Bearbeitung',
-  resolved: 'Gelöst',
+  resolved: 'Erledigt',
   closed: 'Geschlossen',
 };
 
@@ -38,6 +39,10 @@ export default function SupportTicketKundenPage() {
 
   const [ticketsError, setTicketsError] = useState<string | null>(null);
   const [messagesError, setMessagesError] = useState<string | null>(null);
+
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<string | null>(null);
 
   const selectedTicketIdRef = useRef<string | null>(null);
 
@@ -101,6 +106,9 @@ export default function SupportTicketKundenPage() {
   }, [loadTickets]);
 
   useEffect(() => {
+    setActionError(null);
+    setActionStatus(null);
+
     if (!selectedTicketId) {
       setMessages([]);
       setMessagesError(null);
@@ -149,11 +157,39 @@ export default function SupportTicketKundenPage() {
     };
   }, [loadTickets, loadMessagesForTicket]);
 
+  const markSelectedTicketDone = async () => {
+    if (!selectedTicket) return;
+
+    setActionError(null);
+    setActionStatus(null);
+    setUpdatingStatus(true);
+
+    try {
+      const res = await edgeFetch('/api/admin/support', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket_id: selectedTicket.id, status: 'resolved' }),
+      });
+      const body = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setActionError(getApiErrorMessage(body, 'Ticket-Status konnte nicht aktualisiert werden'));
+        return;
+      }
+
+      setActionStatus('Ticket als erledigt markiert.');
+      await loadTickets();
+      await loadMessagesForTicket(selectedTicket.id);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   return (
     <div className="grid">
       <div className="card">
         <h2>Support Ticket Kunden</h2>
-        <p className="note">Read-only Ansicht der synchronisierten Tickets aus dem Quellprojekt.</p>
+        <p className="note">Tickets verwalten und als erledigt markieren.</p>
       </div>
 
       <div className="support-layout">
@@ -211,6 +247,32 @@ export default function SupportTicketKundenPage() {
               </div>
               <p className="note">Organisation: {selectedTicket.organization_id}</p>
               <p className="ticket-description">{selectedTicket.description}</p>
+
+              <div className="support-actions-row">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => void markSelectedTicketDone()}
+                  disabled={updatingStatus || selectedTicket.status === 'resolved' || selectedTicket.status === 'closed'}
+                >
+                  {selectedTicket.status === 'resolved' || selectedTicket.status === 'closed'
+                    ? 'Bereits erledigt'
+                    : updatingStatus
+                      ? 'Speichern...'
+                      : 'Als erledigt markieren'}
+                </button>
+              </div>
+
+              <div className="setting-row">
+                <div>
+                  <p className="setting-title">Antworten im Thread</p>
+                  <p className="note">Diese Funktion kommt bald.</p>
+                </div>
+                <span className="coming-soon-pill">Coming soon</span>
+              </div>
+
+              {actionStatus && <p className="success">{actionStatus}</p>}
+              {actionError && <p className="support-error">{actionError}</p>}
 
               {messagesLoading && <p className="support-loading">Nachrichten werden geladen...</p>}
               {!messagesLoading && messagesError && <p className="support-error">{messagesError}</p>}
