@@ -16,6 +16,8 @@ type CameraPhotoPreview = CameraPhotoRow & {
   image_url: string | null;
 };
 
+type PhotoScope = 'park' | 'global';
+
 const formatCapturedAt = (value: string) =>
   new Intl.DateTimeFormat('de-DE', {
     dateStyle: 'short',
@@ -30,6 +32,7 @@ export default function CamerasPage() {
   const [selectedPreviewCameraCode, setSelectedPreviewCameraCode] = useState('');
   const [cameraPhotos, setCameraPhotos] = useState<CameraPhotoPreview[]>([]);
   const [cameraPhotoCounts, setCameraPhotoCounts] = useState<Record<string, number>>({});
+  const [cameraPhotoScopes, setCameraPhotoScopes] = useState<Record<string, PhotoScope>>({});
   const [cameraPhotosLoading, setCameraPhotosLoading] = useState(false);
   const [cameraPhotosError, setCameraPhotosError] = useState<string | null>(null);
   const [customerCode, setCustomerCode] = useState('');
@@ -45,6 +48,37 @@ export default function CamerasPage() {
     () => cameras.find((camera) => camera.customer_code === selectedPreviewCameraCode) || null,
     [cameras, selectedPreviewCameraCode],
   );
+
+  const countPhotosByCode = async (parkId: string, code: string): Promise<{ count: number; scope: PhotoScope }> => {
+    const { count: localCameraCount } = await supabaseBrowser
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('park_id', parkId)
+      .eq('camera_code', code);
+
+    const { count: localSourceCount } = await supabaseBrowser
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('park_id', parkId)
+      .eq('source_customer_code', code);
+
+    const localCount = Math.max(localCameraCount || 0, localSourceCount || 0);
+    if (localCount > 0) {
+      return { count: localCount, scope: 'park' };
+    }
+
+    const { count: globalCameraCount } = await supabaseBrowser
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('camera_code', code);
+
+    const { count: globalSourceCount } = await supabaseBrowser
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('source_customer_code', code);
+
+    return { count: Math.max(globalCameraCount || 0, globalSourceCount || 0), scope: 'global' };
+  };
 
   const loadParks = async () => {
     const { data, error: parksError } = await supabaseBrowser
@@ -96,33 +130,20 @@ export default function CamerasPage() {
 
     if (!cameraList.length) {
       setCameraPhotoCounts({});
+      setCameraPhotoScopes({});
       return;
     }
 
     const uniqueCodes = [...new Set(cameraList.map((camera) => camera.customer_code))];
     const countEntries = await Promise.all(
       uniqueCodes.map(async (code) => {
-        const { count: byCameraCode } = await supabaseBrowser
-          .from('photos')
-          .select('id', { count: 'exact', head: true })
-          .eq('park_id', parkId)
-          .eq('camera_code', code);
-
-        if ((byCameraCode || 0) > 0) {
-          return [code, byCameraCode || 0] as const;
-        }
-
-        const { count: bySourceCode } = await supabaseBrowser
-          .from('photos')
-          .select('id', { count: 'exact', head: true })
-          .eq('park_id', parkId)
-          .eq('source_customer_code', code);
-
-        return [code, bySourceCode || 0] as const;
+        const result = await countPhotosByCode(parkId, code);
+        return [code, result] as const;
       }),
     );
 
-    setCameraPhotoCounts(Object.fromEntries(countEntries));
+    setCameraPhotoCounts(Object.fromEntries(countEntries.map(([code, result]) => [code, result.count])));
+    setCameraPhotoScopes(Object.fromEntries(countEntries.map(([code, result]) => [code, result.scope])));
   };
 
   const loadCameraPhotos = async (parkId: string, cameraCode: string) => {
@@ -165,7 +186,12 @@ export default function CamerasPage() {
           continue;
         }
 
-        rows = (data || []) as CameraPhotoRow[];
+        const currentRows = (data || []) as CameraPhotoRow[];
+        if (!currentRows.length) {
+          continue;
+        }
+
+        rows = currentRows;
         break;
       }
 
@@ -177,7 +203,7 @@ export default function CamerasPage() {
         return;
       }
 
-      if (!rows.length) {
+      if (!rows || !rows.length) {
         setCameraPhotos([]);
         setCameraPhotosError(null);
         return;
@@ -261,6 +287,22 @@ export default function CamerasPage() {
     e.preventDefault();
     setError(null);
     setStatus(null);
+
+    const conflictingAssignments = await supabaseBrowser
+      .from('park_cameras')
+      .select('park_id, camera_name')
+      .eq('customer_code', customerCode)
+      .neq('park_id', selectedParkId);
+
+    if (!conflictingAssignments.error && (conflictingAssignments.data || []).length > 0) {
+      const parkNames = (conflictingAssignments.data || [])
+        .map((row) => parks.find((park) => park.id === row.park_id)?.name || row.park_id)
+        .join(', ');
+      const proceed = confirm(
+        `Achtung: Kamera-Code ${customerCode} ist bereits in anderen Parks zugeordnet (${parkNames}). Trotzdem speichern?`,
+      );
+      if (!proceed) return;
+    }
 
     const res = await edgeFetch('/api/admin/park-cameras', {
       method: 'POST',
@@ -401,6 +443,7 @@ export default function CamerasPage() {
                 <option key={camera.id} value={camera.customer_code}>
                   {camera.camera_name ? `${camera.camera_name} (${camera.customer_code})` : `Kamera ${camera.customer_code}`}{' '}
                   - {cameraPhotoCounts[camera.customer_code] || 0} Bilder
+                  {cameraPhotoScopes[camera.customer_code] === 'global' ? ' (parkuebergreifend)' : ''}
                 </option>
               ))}
             </select>
@@ -419,8 +462,11 @@ export default function CamerasPage() {
 
         {selectedPreviewCamera && (
           <p className="note" style={{ marginTop: 12 }}>
-            Neueste Bilder für {selectedPreviewCamera.camera_name || `Kamera ${selectedPreviewCamera.customer_code}`}. Im
-            ausgewählten Park: {cameraPhotoCounts[selectedPreviewCamera.customer_code] || 0}.
+            Neueste Bilder für {selectedPreviewCamera.camera_name || `Kamera ${selectedPreviewCamera.customer_code}`}.
+            {cameraPhotoScopes[selectedPreviewCamera.customer_code] === 'global'
+              ? ' Keine Treffer im ausgewählten Park, deshalb parkuebergreifende Anzeige.'
+              : ' Treffer im ausgewählten Park.'}{' '}
+            Anzahl: {cameraPhotoCounts[selectedPreviewCamera.customer_code] || 0}.
           </p>
         )}
         {cameraPhotosLoading && <p className="note">Bilder werden geladen...</p>}
