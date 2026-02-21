@@ -12,16 +12,16 @@
 }
 
 :root[data-theme='dark'] {
-  --bg: #0e1422;
-  --bg-soft: #121b2e;
-  --panel: rgba(24, 35, 57, 0.56);
-  --panel-strong: rgba(29, 43, 70, 0.72);
-  --text: #e6edf8;
-  --muted: #9ca9c3;
-  --accent: #5a88ff;
-  --accent-soft: rgba(90, 136, 255, 0.22);
-  --border: rgba(129, 149, 188, 0.24);
-  --hairline: rgba(144, 162, 197, 0.28);
+  --bg: #1c1d20;
+  --bg-soft: #24262a;
+  --panel: rgba(54, 57, 63, 0.56);
+  --panel-strong: rgba(68, 72, 79, 0.72);
+  --text: #eceef2;
+  --muted: #b0b5bf;
+  --accent: #f08b2b;
+  --accent-soft: rgba(240, 139, 43, 0.2);
+  --border: rgba(180, 186, 197, 0.2);
+  --hairline: rgba(180, 186, 197, 0.24);
 }
 
 * { box-sizing: border-box; }
@@ -66,12 +66,12 @@ input, select, button {
 }
 input:focus, select:focus {
   outline: none;
-  border-color: rgba(47, 109, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(47, 109, 246, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 button {
   background: var(--accent);
-  border-color: rgba(26, 80, 209, 0.7);
+  border-color: color-mix(in srgb, var(--accent) 75%, #000 25%);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
@@ -110,10 +110,10 @@ button:disabled {
   z-index: 30;
   margin-bottom: 18px;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 14px;
+  padding: 14px 16px;
 }
 .brand h1 {
   margin: 0;
@@ -128,29 +128,42 @@ button:disabled {
   color: var(--muted);
   font-weight: 700;
 }
-.nav-links {
-  display: flex;
-  flex-wrap: nowrap;
+.nav-groups {
+  display: grid;
   gap: 8px;
-  justify-content: flex-start;
-  overflow-x: auto;
-  padding-bottom: 2px;
 }
 
-.nav-links-single a {
-  white-space: nowrap;
+.nav-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nav-group-label {
+  min-width: 58px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
 }
 .nav-links a {
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--hairline);
   border-radius: 999px;
   color: color-mix(in srgb, var(--text) 72%, transparent);
   background: rgba(255, 255, 255, 0.4);
-  font-size: 13px;
   font-weight: 600;
 }
 .nav-links a.active {
-  border-color: rgba(47, 109, 246, 0.45);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   color: color-mix(in srgb, var(--accent) 75%, white 25%);
   background: var(--accent-soft);
 }
@@ -160,18 +173,11 @@ button:disabled {
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   justify-self: end;
-  white-space: nowrap;
 }
 .theme-toggle-btn {
   width: auto;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-.logout-btn {
-  padding: 6px 10px;
-  font-size: 13px;
 }
 
 .table { width: 100%; border-collapse: collapse; }
@@ -233,12 +239,12 @@ button:disabled {
 }
 
 .ticket-item-btn:hover {
-  border-color: rgba(47, 109, 246, 0.35);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .ticket-item-btn.active {
-  border-color: rgba(47, 109, 246, 0.55);
-  background: rgba(47, 109, 246, 0.11);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .ticket-item-top {
@@ -304,7 +310,7 @@ button:disabled {
 }
 
 .message-item.role-support {
-  border-left: 4px solid rgba(47, 109, 246, 0.68);
+  border-left: 4px solid color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .message-item.role-operator {
@@ -329,9 +335,9 @@ button:disabled {
 }
 
 .support-loading {
-  background: rgba(47, 109, 246, 0.08);
-  color: #2a4f98;
-  border: 1px solid rgba(47, 109, 246, 0.18);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: color-mix(in srgb, var(--accent) 72%, white 28%);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .support-empty {
@@ -539,6 +545,14 @@ button:disabled {
   .topbar {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  .nav-group {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .nav-group-label {
+    min-width: auto;
   }
   .logout-btn {
     justify-self: start;
