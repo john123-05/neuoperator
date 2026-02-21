@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityEvent, readActivityEvents, subscribeActivityEvents } from '../lib/activity-feed';
+import { ActivityEvent, readActivityEvents, removeActivityEvent, subscribeActivityEvents } from '../lib/activity-feed';
 
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat('de-DE', {
@@ -28,7 +28,17 @@ export default function ActivityFeedWidget() {
             <li key={event.id} className="activity-item">
               <div className="activity-head">
                 <strong>{event.title}</strong>
-                <span className="note">{formatDateTime(event.created_at)}</span>
+                <div className="activity-meta">
+                  <span className="note">{formatDateTime(event.created_at)}</span>
+                  <button
+                    type="button"
+                    className="activity-dismiss-btn"
+                    aria-label="Event entfernen"
+                    onClick={() => removeActivityEvent(event.id)}
+                  >
+                    x
+                  </button>
+                </div>
               </div>
               {event.details && <p className="note">{event.details}</p>}
             </li>

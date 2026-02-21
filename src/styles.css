@@ -444,6 +444,32 @@ button:disabled {
   gap: 8px;
 }
 
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-dismiss-btn {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  padding: 0;
+  line-height: 1;
+  font-size: 14px;
+  font-weight: 800;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--hairline);
+}
+
+.activity-dismiss-btn:hover:not(:disabled) {
+  color: #b42235;
+  border-color: rgba(191, 43, 61, 0.45);
+  background: rgba(191, 43, 61, 0.12);
+}
+
 .coming-soon-card {
   border-style: dashed;
 }

@@ -41,6 +41,13 @@ export function appendActivityEvent(input: Omit<ActivityEvent, 'id' | 'created_a
   return next;
 }
 
+export function removeActivityEvent(id: string): void {
+  const current = readActivityEvents();
+  const next = current.filter((event) => event.id !== id);
+  window.localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent(ACTIVITY_EVENT_NAME));
+}
+
 export function subscribeActivityEvents(onChange: (events: ActivityEvent[]) => void): () => void {
   const reload = () => onChange(readActivityEvents());
   const onStorage = (event: StorageEvent) => {
